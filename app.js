@@ -441,7 +441,9 @@ function drawTable(rows){
 
         <td>
 
-        ${r["Production Order Number"]}
+        ${(r["Production Order Number"] || "")
+.replace(/^0+/,'')}
+
 
         </td>
 
