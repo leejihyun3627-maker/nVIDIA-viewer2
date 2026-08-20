@@ -1,87 +1,44 @@
 body{
-
-font-family:Segoe UI;
-
-margin:20px;
-
-background:#f5f6fa;
-
+    font-family:Segoe UI;
+    margin:20px;
+    background:#f5f6fa;
 }
 
 h1{
-
-color:#0078d4;
-
+    color:#0078d4;
 }
 
 input{
-
-padding:8px;
-
-margin:3px;
-
+    padding:8px;
+    margin:5px;
 }
 
 button{
-
-padding:8px 15px;
-
-background:#0078d4;
-
-color:white;
-
-border:none;
-
-cursor:pointer;
-
+    padding:8px 15px;
+    background:#0078d4;
+    color:white;
+    border:none;
+    cursor:pointer;
 }
 
 table{
-
-width:100%;
-
-border-collapse:collapse;
-
-margin-top:20px;
-
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+    background:white;
 }
 
 th{
-
-background:#0078d4;
-
-color:white;
-
-padding:8px;
-
+    background:#0078d4;
+    color:white;
+    padding:8px;
 }
 
 td{
-
-border:1px solid #ddd;
-
-padding:6px;
-
+    border:1px solid #ddd;
+    padding:6px;
 }
 
-.rev{
-
-background:red;
-
-color:white;
-
-padding:3px 6px;
-
-border-radius:4px;
-
-font-weight:bold;
-
-}
-
-.changed{
-
-background:yellow;
-
-font-weight:bold;
-
+tr:nth-child(even){
+    background:#f8f8f8;
 }
