@@ -421,17 +421,17 @@ function drawTable(rows){
         :
         "";
 
-        const changeFlag =
-        (
-        r[
-        "Change Order Instructions"
-        ]||""
-        )
-        .trim() !== ""
-        ?
-        "⚠ CHANGE"
-        :
-        "";
+const changeFlag =
+
+r["Change Order Instructions"]
+
+?
+
+"<span class='change-flag'>⚠ CHANGE</span>"
+
+:
+
+"";
 
         tbody.innerHTML +=
 
