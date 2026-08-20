@@ -1,1 +1,67 @@
+<!DOCTYPE html>
+<html>
 
+<head>
+
+<meta charset="UTF-8">
+
+<title>
+NV2 Production Viewer
+</title>
+
+<link rel="stylesheet" n.jsscript>
+
+</head>
+
+<body>
+
+<h1>
+NV2 Production Viewer
+</h1>
+
+<input type="file"
+id="csvFile"
+multiple>
+
+<button onclick="loadFiles()">
+CSV Upload
+</button>
+
+<hr>
+
+<input
+id="targetDevice"
+placeholder="Target Device">
+
+<input
+id="po"
+placeholder="Production Order">
+
+<input
+id="batch"
+placeholder="New Build-As Batch">
+
+<input
+id="bridge"
+placeholder="Bridge Batch">
+
+<input
+type="date"
+id="fromDate">
+
+<input
+type="date"
+id="toDate">
+
+<button onclick="searchData()">
+Search
+</button>
+
+<div id="resultCount"></div>
+
+<table id="resultTable">
+
+</table>
+
+<script src="app.js"></
+</html>
