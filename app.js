@@ -1,533 +1,375 @@
-let rawData =
-JSON.parse(
-localStorage.getItem("NV2_RAW_DATA") || "[]"
+let rawData = JSON.parse(
+    localStorage.getItem("NV2_RAW_DATA") || "[]"
 );
 
 let currentTab = "ALL";
 
-function saveData(){
-
-localStorage.setItem(
-"NV2_RAW_DATA",
-JSON.stringify(rawData)
-);
-
+function saveData() {
+    localStorage.setItem(
+        "NV2_RAW_DATA",
+        JSON.stringify(rawData)
+    );
 }
 
-window.loadFiles = function(){
+window.loadFiles = function () {
 
-const files =
-document.getElementById("csvFile").files;
+    const files =
+        document.getElementById("csvFile").files;
 
-if(files.length===0){
+    if (files.length === 0) {
+        alert("CSV 파일을 선택하세요.");
+        return;
+    }
 
-alert("CSV 선택하세요.");
-return;
+    Array.from(files).forEach(file => {
 
-}
+        Papa.parse(file, {
 
-Array.from(files).forEach(file=>{
+            header: true,
+            skipEmptyLines: true,
 
-Papa.parse(file,{
+            complete: function (result) {
 
-header:true,
-skipEmptyLines:true,
+                result.data.forEach(row => {
 
-complete:function(result){
+                    row.__fileName = file.name;
+                    row.__isRevision =
+                        file.name.includes("_CHA_");
 
-result.data.forEach(row=>{
+                    const exists =
+                        rawData.some(x =>
+                            x["Production Order Number"] === row["Production Order Number"] &&
+                            x.__fileName === file.name
+                        );
 
-row.__fileName =
-file.name;
+                    if (!exists) {
+                        rawData.push(row);
+                    }
 
-row.__isRevision =
-file.name.includes("_CHA_");
+                });
 
-const exists =
-rawData.some(
+                saveData();
+                refreshTargetDevice();
+                renderLatestData();
 
-x =>
+                alert(
+                    `${file.name} 업로드 완료`
+                );
 
-x["Production Order Number"] ===
-row["Production Order Number"]
+            }
 
-&&
+        });
 
-x.__fileName === file.name
-
-);
-
-if(!exists){
-
-rawData.push(row);
-
-}
-
-});
-
-saveData();
-
-refreshTargetDevice();
-
-renderLatestData();
-
-}
-
-});
-
-});
+    });
 
 };
 
-function refreshTargetDevice(){
+window.resetSearch = function () {
 
-let list =
-document.getElementById("targetList");
+    document.getElementById("targetDevice").value = "";
+    document.getElementById("po").value = "";
+    document.getElementById("batch").value = "";
+    document.getElementById("bridge").value = "";
+    document.getElementById("fromDate").value = "";
+    document.getElementById("toDate").value = "";
 
-if(!list){
-
-list =
-document.createElement("datalist");
-
-list.id =
-"targetList";
-
-document.body.appendChild(list);
-
-document
-.getElementById("targetDevice")
-.setAttribute(
-"list",
-"targetList"
-);
-
-}
-
-const targets =
-[
-...new Set(
-
-rawData.map(
-
-x=>
-x["Production Order Build-As Part"]
-
-).filter(Boolean)
-
-)
-
-];
-
-list.innerHTML="";
-
-targets.sort().forEach(v=>{
-
-list.innerHTML +=
-`<option value="${v}">`;
-
-});
-
-}
-
-function extractBridgeTokens(str){
-
-if(!str)
-return [];
-
-let result=[];
-
-str.split("#").forEach(part=>{
-
-part.split("~").forEach(v=>{
-
-result.push(v.trim());
-
-});
-
-});
-
-return result;
-
-}
-
-function parseReleaseDate(str){
-
-if(!str)
-return null;
-
-const p =
-str.trim().split("/");
-
-return new Date(
-p[2],
-p[0]-1,
-p[1]
-);
-
-}
-
-function latestMap(){
-
-const map={};
-
-rawData.forEach(row=>{
-
-const po =
-row["Production Order Number"];
-
-if(!po)
-return;
-
-if(!map[po]){
-
-map[po]=row;
-return;
-
-}
-
-if(
-!map[po].__isRevision
-&&
-row.__isRevision
-){
-
-map[po]=row;
-
-}
-
-});
-
-return map;
-
-}
-
-function renderLatestData(){
-
-applyFilter(
-Object.values(
-latestMap()
-)
-);
-
-}
-
-window.searchData = function(){
-
-renderLatestData();
+    renderLatestData();
 
 };
 
-function applyFilter(data){
+window.clearAllData = function () {
 
-const target =
-document.getElementById("targetDevice")
-.value.toLowerCase();
+    if (!confirm("전체 데이터 삭제?"))
+        return;
 
-const po =
-document.getElementById("po")
-.value.toLowerCase();
+    rawData = [];
 
-const batch =
-document.getElementById("batch")
-.value.toLowerCase();
+    saveData();
 
-const bridge =
-document.getElementById("bridge")
-.value.toLowerCase();
+    renderLatestData();
 
-const fromDate =
-document.getElementById("fromDate")
-.value;
+};
 
-const toDate =
-document.getElementById("toDate")
-.value;
+window.setTab = function (tab) {
 
-const filtered =
-data.filter(row=>{
+    currentTab = tab;
 
-const routing =
-row["Routing"] || "";
+    renderLatestData();
 
-if(
-currentTab==="ASSY"
-&&
-!routing.includes("ASSY#SHIP")
-)
-return false;
+};
 
-if(
-currentTab==="BUMP"
-&&
-!routing.includes("BUMP#SHIP")
-)
-return false;
+function refreshTargetDevice() {
 
-const releaseDate =
-parseReleaseDate(
-row["Release Date"]
-);
+    let list =
+        document.getElementById("targetList");
 
-if(
-fromDate &&
-releaseDate <
-new Date(fromDate)
-)
-return false;
+    if (!list) {
 
-if(
-toDate &&
-releaseDate >
-new Date(toDate)
-)
-return false;
+        list =
+            document.createElement("datalist");
 
-const bridgeTokens =
-extractBridgeTokens(
-row["Bridge Batches"] || ""
-)
-.join(" ")
-.toLowerCase();
+        list.id = "targetList";
 
-return (
+        document.body.appendChild(list);
 
-(row["Production Order Build-As Part"] || "")
-.toLowerCase()
-.includes(target)
+        document
+            .getElementById("targetDevice")
+            .setAttribute("list", "targetList");
 
-&&
+    }
 
-(row["Production Order Number"] || "")
-.toLowerCase()
-.includes(po)
+    const targets = [
 
-&&
+        ...new Set(
+            rawData
+                .map(x =>
+                    x["Production Order Build-As Part"]
+                )
+                .filter(Boolean)
+        )
 
-(row["New Build-As Batch"] || "")
-.toLowerCase()
-.includes(batch)
+    ];
 
-&&
+    list.innerHTML = "";
 
-bridgeTokens
-.includes(bridge)
+    targets
+        .sort()
+        .forEach(v => {
 
-);
+            list.innerHTML +=
+                `<option value="${v}">`;
 
-});
-
-drawTable(filtered);
+        });
 
 }
 
-function drawTable(rows){
+function extractBridgeTokens(str) {
 
-const tbody =
-document.querySelector(
-"#resultTable tbody"
-);
+    if (!str) return [];
 
-tbody.innerHTML="";
+    const result = [];
 
-document.getElementById(
-"resultCount"
-).innerHTML =
-"조회건수 : "
-+
-rows.length;
+    str.split("#").forEach(part => {
 
-rows.sort((a,b)=>{
+        part.split("~").forEach(v => {
 
-return (
-parseReleaseDate(
-a["Release Date"]
-)
--
-parseReleaseDate(
-b["Release Date"]
-)
-);
+            result.push(v.trim());
 
-});
+        });
 
-rows.forEach(r=>{
+    });
 
-const revisionStatus =
-
-r.__isRevision
-
-?
-
-"<span class='rev'>UPDATED</span>"
-
-:
-
-"";
-
-tbody.innerHTML +=
-
-`
-<tr>
-
-<td>
-${r["Release Date"] || ""}
-</td>
-
-<td>
-
-<a
-class="po-link"
-onclick="showHistory('${r["Production Order Number"]}')"
->
-
-${(r["Production Order Number"] || "")
-.replace(/^0+/,'')}
-
-</a>
-
-</td>
-
-<td>
-${revisionStatus}
-</td>
-
-<td>
-${r["Routing"] || ""}
-</td>
-
-<td>
-${r["Production Order Build-As Part"] || ""}
-</td>
-
-<td>
-${r["New Build-As Batch"] || ""}
-</td>
-
-<td>
-${r["Ship To"] || ""}
-</td>
-
-<td>
-${r["Production Order Quantity"] || ""}
-</td>
-
-</tr>
-`;
-
-});
+    return result;
 
 }
 
-window.showHistory = function(po){
+function parseReleaseDate(str) {
 
-const rows =
-rawData.filter(
+    if (!str) return null;
 
-x=>
+    const p = str.split("/");
 
-x["Production Order Number"]
-=== po
+    return new Date(
+        p[2],
+        p[0] - 1,
+        p[1]
+    );
 
-);
+}
 
-const latest =
-rows[rows.length-1];
+function latestMap() {
 
-let html =
-"<h2>ABR Detail</h2>";
+    const map = {};
 
-html +=
-"<table style='width:100%;border-collapse:collapse;'>";
+    rawData.forEach(row => {
 
-Object.keys(latest).forEach(key=>{
+        const po =
+            row["Production Order Number"];
 
-if(key.startsWith("__"))
-return;
+        if (!po) return;
 
-html +=
+        if (!map[po]) {
 
-`
-<tr>
+            map[po] = row;
+            return;
 
-<td style="
-width:350px;
-background:#f0f0f0;
-font-weight:bold;
-border:1px solid #ccc;
-padding:5px;
-">
+        }
 
-${key}
+        if (
+            !map[po].__isRevision &&
+            row.__isRevision
+        ) {
 
-</td>
+            map[po] = row;
 
-<td style="
-border:1px solid #ccc;
-padding:5px;
-">
+        }
 
-${latest[key] || ""}
+    });
 
-</td>
+    return map;
 
-</tr>
-`;
+}
 
-});
+window.searchData = function () {
 
-html += "</table>";
-
-document.getElementById(
-"historyContent"
-).innerHTML = html;
-
-document.getElementById(
-"historyModal"
-).style.display="block";
+    renderLatestData();
 
 };
 
-window.clearAllData =
-function(){
+function renderLatestData() {
 
-if(
-!confirm(
-"전체 삭제?"
-)
-)
-return;
+    const latest =
+        Object.values(
+            latestMap()
+        );
 
-rawData=[];
+    applyFilter(latest);
 
-saveData();
+}
 
-drawTable([]);
+function applyFilter(data) {
 
-};
+    const target =
+        document.getElementById("targetDevice")
+            .value
+            .toLowerCase();
 
-window.setTab =
-function(tab){
+    const po =
+        document.getElementById("po")
+            .value
+            .toLowerCase();
 
-currentTab = tab;
+    const batch =
+        document.getElementById("batch")
+            .value
+            .toLowerCase();
 
-renderLatestData();
+    const bridge =
+        document.getElementById("bridge")
+            .value
+            .toLowerCase();
 
-};
+    const fromDate =
+        document.getElementById("fromDate")
+            .value;
 
-refreshTargetDevice();
+    const toDate =
+        document.getElementById("toDate")
+            .value;
 
-renderLatestData();
+    const filtered = data.filter(row => {
 
-window.resetSearch = function(){
+        const routing =
+            row["Routing"] || "";
 
-document.getElementById("targetDevice").value = "";
-document.getElementById("po").value = "";
-document.getElementById("batch").value = "";
-document.getElementById("bridge").value = "";
-document.getElementById("fromDate").value = "";
-document.getElementById("toDate").value = "";
+        if (
+            currentTab === "ASSY" &&
+            !routing.includes("ASSY#SHIP")
+        ) return false;
 
-renderLatestData();
+        if (
+            currentTab === "BUMP" &&
+            !routing.includes("BUMP#SHIP")
+        ) return false;
 
-};
+        const releaseDate =
+            parseReleaseDate(
+                row["Release Date"]
+            );
 
+        if (
+            fromDate &&
+            releaseDate < new Date(fromDate)
+        ) return false;
+
+        if (
+            toDate &&
+            releaseDate > new Date(toDate)
+        ) return false;
+
+        const bridgeText =
+            extractBridgeTokens(
+                row["Bridge Batches"] || ""
+            )
+                .join(" ")
+                .toLowerCase();
+
+        return (
+
+            (row["Production Order Build-As Part"] || "")
+                .toLowerCase()
+                .includes(target)
+
+            &&
+
+            (row["Production Order Number"] || "")
+                .toLowerCase()
+                .includes(po)
+
+            &&
+
+            (row["New Build-As Batch"] || "")
+                .toLowerCase()
+                .includes(batch)
+
+            &&
+
+            bridgeText.includes(bridge)
+
+        );
+
+    });
+
+    drawTable(filtered);
+
+}
+
+function drawTable(rows) {
+
+    const tbody =
+        document.querySelector(
+            "#resultTable tbody"
+        );
+
+    tbody.innerHTML = "";
+
+    document.getElementById(
+        "resultCount"
+    ).innerHTML =
+        "조회 건수 : " +
+        rows.length;
+
+    rows.sort((a, b) => {
+
+        return (
+            parseReleaseDate(
+                a["Release Date"]
+            ) -
+            parseReleaseDate(
+                b["Release Date"]
+            )
+        );
+
+    });
+
+    rows.forEach(r => {
+
+        const revisionStatus =
+            r.__isRevision
+                ? "<span class='rev'>UPDATED</span>"
+                : "";
+
+        tbody.innerHTML += `
+
+        <tr>
+
+        <td>${r["Release Date"] || ""}</td>
+
+        <td>
+
+        <a
+        class="po-link"
+        onclick="showHistory('${r["Production Order Number"]}')"
+        >
+
+        ${
