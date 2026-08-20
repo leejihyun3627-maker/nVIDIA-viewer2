@@ -132,3 +132,43 @@ tr:hover{
 
 .tab-area{
     margin-bottom:15px
+
+.changed{
+
+background:#fff3cd;
+
+border:1px solid #ffe58f;
+
+padding:10px;
+
+margin-bottom:10px;
+
+}
+
+#historyModal table{
+
+width:100%;
+
+border-collapse:collapse;
+
+margin-top:10px;
+
+}
+
+#historyModal th,
+#historyModal td{
+
+border:1px solid #ccc;
+
+padding:6px;
+
+}
+
+#historyModal th{
+
+background:#0078d4;
+
+color:white;
+
+}
+``
