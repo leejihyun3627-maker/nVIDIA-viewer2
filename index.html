@@ -2,35 +2,22 @@
 <html lang="ko">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NV2 Production Viewer</title>
 
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="papaparse.min.js"></script>
+<title>NV2 Production Viewer</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="papaparse.min.js"></script>
+
 </head>
 
-<div id="historyModal">
-
-<button onclick="
-document.getElementById('historyModal').style.display='none'
-">
-닫기
-</button>
-
-<hr>
-
-<div id="historyContent">
-
-</div>
-
-</div>
-    
 <body>
 
 <h1>NV2 Production Viewer</h1>
-    
+
 <div style="margin-bottom:15px;">
 
 <button onclick="setTab('ALL')">
@@ -46,56 +33,65 @@ BUMP#SHIP
 </button>
 
 </div>
-    <div class="toolbar">
 
-        <input type="file"
-               id="csvFile"
-               multiple
-               accept=".csv">
+<div class="toolbar">
 
-        <button onclick="loadFiles()">
-            CSV Upload
-        </button>
+<input
+type="file"
+id="csvFile"
+multiple
+accept=".csv">
 
-        <button onclick="clearAllData()">
-            Clear Data
-        </button>
+<button onclick="loadFiles()">
+CSV Upload
+</button>
 
-    </div>
+<button onclick="clearAllData()">
+Clear Data
+</button>
 
-    <hr>
+</div>
 
-    <div class="search-area">
+<hr>
 
-        <input id="targetDevice"
+<div class="search-area">
+
+<input
+id="targetDevice"
 placeholder="Target Device"
 list="targetList">
-        <input id="po"
-               placeholder="Production Order">
 
-        <input id="batch"
-               placeholder="New Build-As Batch">
+<input
+id="po"
+placeholder="Production Order Number">
 
-        <input id="bridge"
-               placeholder="Bridge Batch">
+<input
+id="batch"
+placeholder="New Build-As Batch">
 
-        <input type="date"
-               id="fromDate">
+<input
+id="bridge"
+placeholder="Bridge Batch">
 
-        <input type="date"
-               id="toDate">
+<input
+type="date"
+id="fromDate">
 
-        <button onclick="searchData()">
-            Search
-        </button>
+<input
+type="date"
+id="toDate">
 
-        <button onclick="resetSearch()">
-            Reset
-        </button>
+<button onclick="searchData()">
+Search
+</button>
 
-    </div>
+<button onclick="resetSearch()">
+Reset
+</button>
 
-    <div id="resultCount"></div>
+</div>
+
+<div id="resultCount"></div>
 
 <table id="resultTable">
 
@@ -129,35 +125,6 @@ list="targetList">
 
 </table>
 
-    <script src="app.js"></script>
-
-<div id="historyModal"
-style="
-display:none;
-position:fixed;
-top:5%;
-left:5%;
-width:90%;
-height:85%;
-background:white;
-overflow:auto;
-padding:20px;
-z-index:9999;
-border:2px solid #000;
-">
-
-<button onclick="
-document.getElementById('historyModal').style.display='none'
-">
-닫기
-</button>
-
-<hr>
-
-<div id="historyContent"></div>
-
-</div>
-
 <div id="historyModal">
 
 <button onclick="
@@ -172,7 +139,10 @@ document.getElementById('historyModal').style.display='none'
 
 </div>
 
-</div>    
+</div>
+
+<script src="app.js"></script>
+
 </body>
 
 </html>
