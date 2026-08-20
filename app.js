@@ -433,15 +433,14 @@ r["Change Order Instructions"]
 
 "";
 
-        tbody.innerHTML +=
+   tbody.innerHTML += `
+<tr>
 
-        `<tr>
+<td>
+${r["Release Date"] || ""}
+</td>
 
-        <td>${r["Release Date"]||""}</td>
-
-        <td>
-
-        <td>
+<td>
 
 <a
 class="po-link"
@@ -455,33 +454,36 @@ ${(r["Production Order Number"] || "")
 
 </td>
 
-        <td>${rev}</td>
+<td>
+${rev}
+</td>
 
-        <td>
-        ${r["Routing"]||""}
-        </td>
+<td>
+${r["Routing"] || ""}
+</td>
 
-        <td>
-        ${r["Production Order Build-As Part"]||""}
-        </td>
+<td>
+${r["Production Order Build-As Part"] || ""}
+</td>
 
-        <td>
-        ${r["New Build-As Batch"]||""}
-        </td>
+<td>
+${r["New Build-As Batch"] || ""}
+</td>
 
-        <td>
-        ${r["Ship To"]||""}
-        </td>
+<td>
+${r["Ship To"] || ""}
+</td>
 
-        <td>
-        ${r["Production Order Quantity"]||""}
-        </td>
+<td>
+${r["Production Order Quantity"] || ""}
+</td>
 
-        <td>
-        ${changeFlag}
-        </td>
+<td>
+${changeFlag}
+</td>
 
-        </tr>`;
+</tr>
+`;
 
     });
 
