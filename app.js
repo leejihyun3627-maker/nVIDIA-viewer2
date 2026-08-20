@@ -17,8 +17,10 @@ window.loadFiles = function () {
         document.getElementById("csvFile").files;
 
     if (files.length === 0) {
+
         alert("CSV 파일을 선택하세요.");
         return;
+
     }
 
     Array.from(files).forEach(file => {
@@ -32,28 +34,25 @@ window.loadFiles = function () {
 
                 result.data.forEach(row => {
 
-                    row.__fileName = file.name;
+                    row.__fileName =
+                        file.name;
+
                     row.__isRevision =
                         file.name.includes("_CHA_");
 
-                    const exists =
-                        rawData.some(x =>
-                            x["Production Order Number"] === row["Production Order Number"] &&
-                            x.__fileName === file.name
-                        );
-
-                    if (!exists) {
-                        rawData.push(row);
-                    }
+                    rawData.push(row);
 
                 });
 
                 saveData();
+
                 refreshTargetDevice();
+
                 renderLatestData();
 
                 alert(
-                    `${file.name} 업로드 완료`
+                    file.name +
+                    " 업로드 완료"
                 );
 
             }
@@ -114,58 +113,43 @@ function refreshTargetDevice() {
 
         document
             .getElementById("targetDevice")
-            .setAttribute("list", "targetList");
+            .setAttribute(
+                "list",
+                "targetList"
+            );
 
     }
 
     const targets = [
 
         ...new Set(
+
             rawData
-                .map(x =>
+                .map(
+                    x =>
                     x["Production Order Build-As Part"]
                 )
                 .filter(Boolean)
+
         )
 
     ];
 
     list.innerHTML = "";
 
-    targets
-        .sort()
-        .forEach(v => {
+    targets.sort().forEach(v => {
 
-            list.innerHTML +=
-                `<option value="${v}">`;
-
-        });
-
-}
-
-function extractBridgeTokens(str) {
-
-    if (!str) return [];
-
-    const result = [];
-
-    str.split("#").forEach(part => {
-
-        part.split("~").forEach(v => {
-
-            result.push(v.trim());
-
-        });
+        list.innerHTML +=
+            `<option value="${v}">`;
 
     });
-
-    return result;
 
 }
 
 function parseReleaseDate(str) {
 
-    if (!str) return null;
+    if (!str)
+        return new Date(1900, 0, 1);
 
     const p = str.split("/");
 
@@ -174,6 +158,29 @@ function parseReleaseDate(str) {
         p[0] - 1,
         p[1]
     );
+
+}
+
+function extractBridgeTokens(str) {
+
+    if (!str)
+        return [];
+
+    const result = [];
+
+    str.split("#").forEach(part => {
+
+        part.split("~").forEach(v => {
+
+            result.push(
+                v.trim()
+            );
+
+        });
+
+    });
+
+    return result;
 
 }
 
@@ -196,7 +203,8 @@ function latestMap() {
         }
 
         if (
-            !map[po].__isRevision &&
+            !map[po].__isRevision
+            &&
             row.__isRevision
         ) {
 
@@ -218,12 +226,12 @@ window.searchData = function () {
 
 function renderLatestData() {
 
-    const latest =
+    const latestRows =
         Object.values(
             latestMap()
         );
 
-    applyFilter(latest);
+    applyFilter(latestRows);
 
 }
 
@@ -257,68 +265,79 @@ function applyFilter(data) {
         document.getElementById("toDate")
             .value;
 
-    const filtered = data.filter(row => {
+    const filtered =
+        data.filter(row => {
 
-        const routing =
-            row["Routing"] || "";
+            const routing =
+                row["Routing"] || "";
 
-        if (
-            currentTab === "ASSY" &&
-            !routing.includes("ASSY#SHIP")
-        ) return false;
+            if (
+                currentTab === "ASSY"
+                &&
+                !routing.includes(
+                    "ASSY#SHIP"
+                )
+            ) return false;
 
-        if (
-            currentTab === "BUMP" &&
-            !routing.includes("BUMP#SHIP")
-        ) return false;
+            if (
+                currentTab === "BUMP"
+                &&
+                !routing.includes(
+                    "BUMP#SHIP"
+                )
+            ) return false;
 
-        const releaseDate =
-            parseReleaseDate(
-                row["Release Date"]
+            const releaseDate =
+                parseReleaseDate(
+                    row["Release Date"]
+                );
+
+            if (
+                fromDate
+                &&
+                releaseDate <
+                new Date(fromDate)
+            ) return false;
+
+            if (
+                toDate
+                &&
+                releaseDate >
+                new Date(toDate)
+            ) return false;
+
+            const bridgeText =
+                extractBridgeTokens(
+                    row["Bridge Batches"] || ""
+                )
+                    .join(" ")
+                    .toLowerCase();
+
+            return (
+
+                (row["Production Order Build-As Part"] || "")
+                    .toLowerCase()
+                    .includes(target)
+
+                &&
+
+                (row["Production Order Number"] || "")
+                    .toLowerCase()
+                    .includes(po)
+
+                &&
+
+                (row["New Build-As Batch"] || "")
+                    .toLowerCase()
+                    .includes(batch)
+
+                &&
+
+                bridgeText.includes(bridge)
+
             );
 
-        if (
-            fromDate &&
-            releaseDate < new Date(fromDate)
-        ) return false;
-
-        if (
-            toDate &&
-            releaseDate > new Date(toDate)
-        ) return false;
-
-        const bridgeText =
-            extractBridgeTokens(
-                row["Bridge Batches"] || ""
-            )
-                .join(" ")
-                .toLowerCase();
-
-        return (
-
-            (row["Production Order Build-As Part"] || "")
-                .toLowerCase()
-                .includes(target)
-
-            &&
-
-            (row["Production Order Number"] || "")
-                .toLowerCase()
-                .includes(po)
-
-            &&
-
-            (row["New Build-As Batch"] || "")
-                .toLowerCase()
-                .includes(batch)
-
-            &&
-
-            bridgeText.includes(bridge)
-
-        );
-
-    });
+        });
 
     drawTable(filtered);
 
@@ -344,7 +363,8 @@ function drawTable(rows) {
         return (
             parseReleaseDate(
                 a["Release Date"]
-            ) -
+            )
+            -
             parseReleaseDate(
                 b["Release Date"]
             )
@@ -355,15 +375,24 @@ function drawTable(rows) {
     rows.forEach(r => {
 
         const revisionStatus =
+
             r.__isRevision
-                ? "<span class='rev'>UPDATED</span>"
-                : "";
+
+                ?
+
+                "<span class='rev'>UPDATED</span>"
+
+                :
+
+                "";
 
         tbody.innerHTML += `
 
         <tr>
 
-        <td>${r["Release Date"] || ""}</td>
+        <td>
+        ${r["Release Date"] || ""}
+        </td>
 
         <td>
 
@@ -372,4 +401,117 @@ function drawTable(rows) {
         onclick="showHistory('${r["Production Order Number"]}')"
         >
 
-        ${
+        ${(r["Production Order Number"] || "")
+            .replace(/^0+/,"")}
+
+        </a>
+
+        </td>
+
+        <td>
+        ${revisionStatus}
+        </td>
+
+        <td>
+        ${r["Routing"] || ""}
+        </td>
+
+        <td>
+        ${r["Production Order Build-As Part"] || ""}
+        </td>
+
+        <td>
+        ${r["New Build-As Batch"] || ""}
+        </td>
+
+        <td>
+        ${r["Ship To"] || ""}
+        </td>
+
+        <td>
+        ${r["Production Order Quantity"] || ""}
+        </td>
+
+        </tr>
+
+        `;
+
+    });
+
+}
+
+window.showHistory = function (po) {
+
+    const rows =
+        rawData.filter(
+            x =>
+            x["Production Order Number"] === po
+        );
+
+    if (rows.length === 0)
+        return;
+
+    const latest =
+        rows[rows.length - 1];
+
+    let html = `
+
+    <h2>
+    Production Order :
+    ${po.replace(/^0+/,"")}
+    </h2>
+
+    <table>
+
+    `;
+
+    Object.keys(latest).forEach(key => {
+
+        if (
+            key.startsWith("__")
+        ) return;
+
+        html += `
+
+        <tr>
+
+        <td style="
+        width:320px;
+        background:#f0f0f0;
+        font-weight:bold;
+        ">
+
+        ${key}
+
+        </td>
+
+        <td>
+
+        ${latest[key] || ""}
+
+        </td>
+
+        </tr>
+
+        `;
+
+    });
+
+    html += "</table>";
+
+    document
+        .getElementById(
+            "historyContent"
+        )
+        .innerHTML = html;
+
+    document
+        .getElementById(
+            "historyModal"
+        )
+        .style.display = "block";
+
+};
+
+refreshTargetDevice();
+renderLatestData();
