@@ -43,7 +43,25 @@ file.name;
 row.__isRevision =
 file.name.includes("_CHA_");
 
+const exists =
+rawData.some(
+
+x =>
+
+x["Production Order Number"] ===
+row["Production Order Number"]
+
+&&
+
+x.__fileName === file.name
+
+);
+
+if(!exists){
+
 rawData.push(row);
+
+}
 
 });
 
