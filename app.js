@@ -6,413 +6,333 @@ localStorage.getItem("NV2_RAW_DATA") || "[]"
 let currentTab = "ALL";
 
 function saveData(){
-    localStorage.setItem(
-        "NV2_RAW_DATA",
-        JSON.stringify(rawData)
-    );
+
+localStorage.setItem(
+"NV2_RAW_DATA",
+JSON.stringify(rawData)
+);
+
 }
 
 window.loadFiles = function(){
 
-    const files =
-    document.getElementById("csvFile").files;
+const files =
+document.getElementById("csvFile").files;
 
-    if(files.length===0){
+if(files.length===0){
 
-        alert("CSV 선택하세요.");
-        return;
+alert("CSV 선택하세요.");
+return;
 
-    }
+}
 
-    Array.from(files).forEach(file=>{
+Array.from(files).forEach(file=>{
 
-        Papa.parse(file,{
+Papa.parse(file,{
 
-            header:true,
-            skipEmptyLines:true,
+header:true,
+skipEmptyLines:true,
 
-            complete:function(result){
+complete:function(result){
 
-                result.data.forEach(row=>{
+result.data.forEach(row=>{
 
-                    row.__fileName =
-                    file.name;
+row.__fileName =
+file.name;
 
-                    row.__isRevision =
-                    file.name.includes("_CHA_");
+row.__isRevision =
+file.name.includes("_CHA_");
 
-                    rawData.push(row);
+rawData.push(row);
 
-                });
+});
 
-                saveData();
+saveData();
 
-                refreshTargetDevice();
+refreshTargetDevice();
 
-                renderLatestData();
+renderLatestData();
 
-            }
+}
 
-        });
+});
 
-    });
+});
 
 };
 
 function refreshTargetDevice(){
 
-    let list =
-    document.getElementById(
-    "targetList"
-    );
+let list =
+document.getElementById("targetList");
 
-    if(!list){
+if(!list){
 
-        list =
-        document.createElement(
-        "datalist"
-        );
+list =
+document.createElement("datalist");
 
-        list.id =
-        "targetList";
+list.id =
+"targetList";
 
-        document.body.appendChild(
-        list
-        );
+document.body.appendChild(list);
 
-        document
-        .getElementById(
-        "targetDevice"
-        )
-        .setAttribute(
-        "list",
-        "targetList"
-        );
+document
+.getElementById("targetDevice")
+.setAttribute(
+"list",
+"targetList"
+);
 
-    }
+}
 
-    const targets =
-    [...new Set(
+const targets =
+[
+...new Set(
 
-        rawData.map(
-        x=>
-        x[
-        "Production Order Build-As Part"
-        ]
-        )
-        .filter(Boolean)
+rawData.map(
 
-    )];
+x=>
+x["Production Order Build-As Part"]
 
-    list.innerHTML="";
+).filter(Boolean)
 
-    targets
-    .sort()
-    .forEach(v=>{
+)
 
-        list.innerHTML +=
+];
 
-        `<option value="${v}">`;
+list.innerHTML="";
 
-    });
+targets.sort().forEach(v=>{
+
+list.innerHTML +=
+`<option value="${v}">`;
+
+});
 
 }
 
 function extractBridgeTokens(str){
 
-    if(!str)
-    return [];
+if(!str)
+return [];
 
-    let result=[];
+let result=[];
 
-    str.split("#")
-    .forEach(part=>{
+str.split("#").forEach(part=>{
 
-        part.split("~")
-        .forEach(v=>{
+part.split("~").forEach(v=>{
 
-            result.push(
-            v.trim()
-            );
+result.push(v.trim());
 
-        });
+});
 
-    });
+});
 
-    return result;
+return result;
 
 }
 
 function parseReleaseDate(str){
 
-    if(!str)
-    return null;
+if(!str)
+return null;
 
-    const p =
-    str.trim().split("/");
+const p =
+str.trim().split("/");
 
-    return new Date(
-        p[2],
-        p[0]-1,
-        p[1]
-    );
+return new Date(
+p[2],
+p[0]-1,
+p[1]
+);
 
 }
 
 function latestMap(){
 
-    const map = {};
+const map={};
 
-    rawData.forEach(row=>{
+rawData.forEach(row=>{
 
-        const po =
-        row[
-        "Production Order Number"
-        ];
+const po =
+row["Production Order Number"];
 
-        if(!po)
-        return;
+if(!po)
+return;
 
-        const filename =
-        row.__fileName || "";
+if(!map[po]){
 
-        const current =
-        map[po];
+map[po]=row;
+return;
 
-        if(!current){
+}
 
-            map[po] = row;
+if(
+!map[po].__isRevision
+&&
+row.__isRevision
+){
 
-            return;
+map[po]=row;
 
-        }
+}
 
-        const revCurrent =
-        current.__isRevision;
+});
 
-        const revNew =
-        row.__isRevision;
-
-        if(
-            !revCurrent &&
-            revNew
-        ){
-
-            map[po] = row;
-
-        }
-
-    });
-
-    return map;
+return map;
 
 }
 
 function renderLatestData(){
 
-    const latest =
-    Object.values(
-    latestMap()
-    );
-
-    applyFilter(latest);
+applyFilter(
+Object.values(
+latestMap()
+)
+);
 
 }
 
-window.searchData =
-function(){
+window.searchData = function(){
 
-    const latest =
-    Object.values(
-    latestMap()
-    );
-
-    applyFilter(latest);
+renderLatestData();
 
 };
 
 function applyFilter(data){
 
-    const target =
-    document
-    .getElementById(
-    "targetDevice"
-    )
-    .value
-    .toLowerCase();
+const target =
+document.getElementById("targetDevice")
+.value.toLowerCase();
 
-    const po =
-    document
-    .getElementById(
-    "po"
-    )
-    .value
-    .toLowerCase();
+const po =
+document.getElementById("po")
+.value.toLowerCase();
 
-    const batch =
-    document
-    .getElementById(
-    "batch"
-    )
-    .value
-    .toLowerCase();
+const batch =
+document.getElementById("batch")
+.value.toLowerCase();
 
-    const bridge =
-    document
-    .getElementById(
-    "bridge"
-    )
-    .value
-    .toLowerCase();
+const bridge =
+document.getElementById("bridge")
+.value.toLowerCase();
 
-    const fromDate =
-    document
-    .getElementById(
-    "fromDate"
-    )
-    .value;
+const fromDate =
+document.getElementById("fromDate")
+.value;
 
-    const toDate =
-    document
-    .getElementById(
-    "toDate"
-    )
-    .value;
+const toDate =
+document.getElementById("toDate")
+.value;
 
-    const filtered =
-    data.filter(row=>{
+const filtered =
+data.filter(row=>{
 
-        const routing =
-        (
-        row["Routing"]||""
-        );
+const routing =
+row["Routing"] || "";
 
-        if(
-        currentTab==="ASSY"
-        &&
-        !routing.includes(
-        "ASSY#SHIP"
-        ))
-        return false;
+if(
+currentTab==="ASSY"
+&&
+!routing.includes("ASSY#SHIP")
+)
+return false;
 
-        if(
-        currentTab==="BUMP"
-        &&
-        !routing.includes(
-        "BUMP#SHIP"
-        ))
-        return false;
+if(
+currentTab==="BUMP"
+&&
+!routing.includes("BUMP#SHIP")
+)
+return false;
 
-        const releaseDate =
-        parseReleaseDate(
-        row[
-        "Release Date"
-        ]
-        );
+const releaseDate =
+parseReleaseDate(
+row["Release Date"]
+);
 
-        if(
-        fromDate &&
-        releaseDate <
-        new Date(fromDate)
-        )
-        return false;
+if(
+fromDate &&
+releaseDate <
+new Date(fromDate)
+)
+return false;
 
-        if(
-        toDate &&
-        releaseDate >
-        new Date(toDate)
-        )
-        return false;
+if(
+toDate &&
+releaseDate >
+new Date(toDate)
+)
+return false;
 
-        const bridgeTokens =
-        extractBridgeTokens(
+const bridgeTokens =
+extractBridgeTokens(
+row["Bridge Batches"] || ""
+)
+.join(" ")
+.toLowerCase();
 
-        row[
-        "Bridge Batches"
-        ]||""
+return (
 
-        )
-        .join(" ")
-        .toLowerCase();
+(row["Production Order Build-As Part"] || "")
+.toLowerCase()
+.includes(target)
 
-        return (
+&&
 
-        (
-        row[
-        "Production Order Build-As Part"
-        ]||""
-        )
-        .toLowerCase()
-        .includes(target)
+(row["Production Order Number"] || "")
+.toLowerCase()
+.includes(po)
 
-        &&
+&&
 
-        (
-        row[
-        "Production Order Number"
-        ]||""
-        )
-        .toLowerCase()
-        .includes(po)
+(row["New Build-As Batch"] || "")
+.toLowerCase()
+.includes(batch)
 
-        &&
+&&
 
-        (
-        row[
-        "New Build-As Batch"
-        ]||""
-        )
-        .toLowerCase()
-        .includes(batch)
+bridgeTokens
+.includes(bridge)
 
-        &&
+);
 
-        bridgeTokens
-        .includes(bridge)
+});
 
-        );
-
-    });
-
-    drawTable(filtered);
+drawTable(filtered);
 
 }
 
 function drawTable(rows){
 
-    const tbody =
-    document.querySelector(
-    "#resultTable tbody"
-    );
+const tbody =
+document.querySelector(
+"#resultTable tbody"
+);
 
-    tbody.innerHTML="";
+tbody.innerHTML="";
 
-    document
-    .getElementById(
-    "resultCount"
-    )
-    .innerHTML =
-    "조회건수 : "
-    + rows.length;
+document.getElementById(
+"resultCount"
+).innerHTML =
+"조회건수 : "
++
+rows.length;
 
-    rows
-    .sort((a,b)=>{
+rows.sort((a,b)=>{
 
-        const d1 =
-        parseReleaseDate(
-        a["Release Date"]
-        );
+return (
+parseReleaseDate(
+a["Release Date"]
+)
+-
+parseReleaseDate(
+b["Release Date"]
+)
+);
 
-        const d2 =
-        parseReleaseDate(
-        b["Release Date"]
-        );
+});
 
-        return d1-d2;
-
-    });
-
-    rows.forEach(r=>{
+rows.forEach(r=>{
 
 const revisionStatus =
 
@@ -426,28 +346,9 @@ r.__isRevision
 
 "";
 
-   tbody.innerHTML += `
-<tr>
+tbody.innerHTML +=
 
-<td>
-${r["Release Date"] || ""}
-</td>
-
-<td>
-
-<a
-class="po-link"
-onclick="showHistory('${r["Production Order Number"]}')"
->
-
-${(r["Production Order Number"] || "")
-.replace(/^0+/,'')}
-
-</a>
-
-</td>
-
-tbody.innerHTML += `
+`
 <tr>
 
 <td>
@@ -494,320 +395,107 @@ ${r["Production Order Quantity"] || ""}
 
 </tr>
 `;
-    });
+
+});
 
 }
 
-window.clearAllData =
-function(){
-
-    if(
-    !confirm(
-    "전체 삭제?"
-    )
-    )
-    return;
-
-    rawData=[];
-
-    saveData();
-
-    drawTable([]);
-
-};
-
-window.setTab =
-function(tab){
-
-    currentTab = tab;
-
-    renderLatestData();
-
-};
-
-refreshTargetDevice();
-
-renderLatestData();
-
 window.showHistory = function(po){
 
-    const rows =
-    rawData.filter(
+const rows =
+rawData.filter(
 
-    x=>
+x=>
 
-    x["Production Order Number"]
-    === po
+x["Production Order Number"]
+=== po
 
-    );
+);
 
-    rows.sort(
+const latest =
+rows[rows.length-1];
 
-    (a,b)=>
-
-    a.__fileName.localeCompare(
-    b.__fileName
-    )
-
-    );
-
-    const latest =
-    rows[rows.length-1];
-
-    let html =
-
-    "<h2>ABR Detail</h2>";
-
-    if(rows.length>1){
-
-        html +=
-
-        "<h3>Changed Fields</h3>";
-
-        const oldRow =
-        rows[0];
-
-        if(
-            oldRow["Ship To"]
-            !==
-            latest["Ship To"]
-        ){
-
-            html +=
-
-            `
-            <div class='changed'>
-
-            Ship To
-
-            <br>
-
-            ${oldRow["Ship To"]}
-
-            →
-
-            ${latest["Ship To"]}
-
-            </div>
-            `;
-        }
-
-        if(
-
-        oldRow[
-        "Change Order Instructions"
-        ]
-
-        !==
-
-        latest[
-        "Change Order Instructions"
-        ]
-
-        ){
-
-            html +=
-
-            `
-            <div class='changed'>
-
-            Change Order Instructions
-
-            <br>
-
-            ${
-            oldRow[
-            "Change Order Instructions"
-            ] || "(blank)"
-            }
-
-            →
-
-            ${
-            latest[
-            "Change Order Instructions"
-            ] || "(blank)"
-            }
-
-            </div>
-            `;
-        }
-
-    }
-
-    html +=
-
-    "<h3>Full CSV Data</h3>";
-
-    html +=
-"<h3>Full ABR Information</h3>";
+let html =
+"<h2>ABR Detail</h2>";
 
 html +=
 "<table style='width:100%;border-collapse:collapse;'>";
 
 Object.keys(latest).forEach(key=>{
 
-    if(key.startsWith("__"))
-    return;
+if(key.startsWith("__"))
+return;
 
-    html +=
+html +=
 
-    `
-    <tr>
+`
+<tr>
 
-    <td
-    style="
-    width:350px;
-    font-weight:bold;
-    border:1px solid #ccc;
-    padding:5px;
-    background:#f0f0f0;
-    ">
-    ${key}
-    </td>
+<td style="
+width:350px;
+background:#f0f0f0;
+font-weight:bold;
+border:1px solid #ccc;
+padding:5px;
+">
 
-    <td
-    style="
-    border:1px solid #ccc;
-    padding:5px;
-    ">
-    ${latest[key] || ""}
-    </td>
+${key}
 
-    </tr>
-    `;
+</td>
+
+<td style="
+border:1px solid #ccc;
+padding:5px;
+">
+
+${latest[key] || ""}
+
+</td>
+
+</tr>
+`;
 
 });
 
 html += "</table>";
 
-    document
-    .getElementById(
-    "historyContent"
-    ).innerHTML = html;
+document.getElementById(
+"historyContent"
+).innerHTML = html;
 
-    document
-    .getElementById(
-    "historyModal"
-    ).style.display =
-    "block";
+document.getElementById(
+"historyModal"
+).style.display="block";
 
 };
 
+window.clearAllData =
+function(){
 
-    const rows =
-    rawData.filter(
-        x =>
-        x["Production Order Number"] === po
-    );
+if(
+!confirm(
+"전체 삭제?"
+)
+)
+return;
 
-    rows.sort(
-        (a,b)=>
-        a.__fileName.localeCompare(
-            b.__fileName
-        )
-    );
+rawData=[];
 
-    let html = "";
+saveData();
 
-    for(let i=0;i<rows.length;i++){
-
-        const row = rows[i];
-
-        html +=
-
-        `
-        <h3>
-        REV ${i}
-        </h3>
-
-        <b>
-        ${row.__fileName}
-        </b>
-
-        <br><br>
-
-        Ship To :
-
-        ${row["Ship To"] || ""}
-
-        <br><br>
-
-        Change Order :
-
-        ${row["Change Order Instructions"] || ""}
-
-        <hr>
-        `;
-    }
-
-    // 변경 비교
-
-    if(rows.length >= 2){
-
-        const oldRow = rows[0];
-        const newRow = rows[rows.length-1];
-
-        html += "<h3>Changed Fields</h3>";
-
-        if(
-            oldRow["Ship To"]
-            !==
-            newRow["Ship To"]
-        ){
-
-            html +=
-            `
-            <div class="changed">
-
-            Ship To
-
-            <br>
-
-            ${oldRow["Ship To"]}
-
-            →
-
-            ${newRow["Ship To"]}
-
-            </div>
-
-            <br>
-            `;
-        }
-
-        if(
-            oldRow["Change Order Instructions"]
-            !==
-            newRow["Change Order Instructions"]
-        ){
-
-            html +=
-            `
-            <div class="changed">
-
-            Change Order Instructions
-
-            <br>
-
-            ${oldRow["Change Order Instructions"] || "(blank)"}
-
-            →
-
-            ${newRow["Change Order Instructions"] || "(blank)"}
-
-            </div>
-            `;
-        }
-
-    }
-
-    document.getElementById(
-        "historyContent"
-    ).innerHTML = html;
-
-    document.getElementById(
-        "historyModal"
-    ).style.display = "block";
+drawTable([]);
 
 };
+
+window.setTab =
+function(tab){
+
+currentTab = tab;
+
+renderLatestData();
+
+};
+
+refreshTargetDevice();
+
+renderLatestData();
