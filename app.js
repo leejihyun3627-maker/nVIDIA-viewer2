@@ -499,3 +499,17 @@ renderLatestData();
 refreshTargetDevice();
 
 renderLatestData();
+
+window.resetSearch = function(){
+
+document.getElementById("targetDevice").value = "";
+document.getElementById("po").value = "";
+document.getElementById("batch").value = "";
+document.getElementById("bridge").value = "";
+document.getElementById("fromDate").value = "";
+document.getElementById("toDate").value = "";
+
+renderLatestData();
+
+};
+
