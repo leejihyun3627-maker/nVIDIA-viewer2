@@ -447,8 +447,29 @@ ${(r["Production Order Number"] || "")
 
 </td>
 
+tbody.innerHTML += `
+<tr>
+
 <td>
-${rev}
+${r["Release Date"] || ""}
+</td>
+
+<td>
+
+<a
+class="po-link"
+onclick="showHistory('${r["Production Order Number"]}')"
+>
+
+${(r["Production Order Number"] || "")
+.replace(/^0+/,'')}
+
+</a>
+
+</td>
+
+<td>
+${revisionStatus}
 </td>
 
 <td>
@@ -471,13 +492,8 @@ ${r["Ship To"] || ""}
 ${r["Production Order Quantity"] || ""}
 </td>
 
-<td>
-${changeFlag}
-</td>
-
 </tr>
 `;
-
     });
 
 }
