@@ -639,27 +639,47 @@ window.showHistory = function(po){
 
     "<h3>Full CSV Data</h3>";
 
-    Object.keys(latest)
-    .forEach(key=>{
+    html +=
+"<h3>Full ABR Information</h3>";
 
-        if(
-        key.startsWith("__")
-        )
-        return;
+html +=
+"<table style='width:100%;border-collapse:collapse;'>";
 
-        html +=
+Object.keys(latest).forEach(key=>{
 
-        `
-        <b>${key}</b>
+    if(key.startsWith("__"))
+    return;
 
-        <br>
+    html +=
 
-        ${latest[key]}
+    `
+    <tr>
 
-        <br><br>
-        `;
+    <td
+    style="
+    width:350px;
+    font-weight:bold;
+    border:1px solid #ccc;
+    padding:5px;
+    background:#f0f0f0;
+    ">
+    ${key}
+    </td>
 
-    });
+    <td
+    style="
+    border:1px solid #ccc;
+    padding:5px;
+    ">
+    ${latest[key] || ""}
+    </td>
+
+    </tr>
+    `;
+
+});
+
+html += "</table>";
 
     document
     .getElementById(
