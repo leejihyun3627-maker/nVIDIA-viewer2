@@ -522,6 +522,150 @@ window.showHistory = function(po){
 
     const rows =
     rawData.filter(
+
+    x=>
+
+    x["Production Order Number"]
+    === po
+
+    );
+
+    rows.sort(
+
+    (a,b)=>
+
+    a.__fileName.localeCompare(
+    b.__fileName
+    )
+
+    );
+
+    const latest =
+    rows[rows.length-1];
+
+    let html =
+
+    "<h2>ABR Detail</h2>";
+
+    if(rows.length>1){
+
+        html +=
+
+        "<h3>Changed Fields</h3>";
+
+        const oldRow =
+        rows[0];
+
+        if(
+            oldRow["Ship To"]
+            !==
+            latest["Ship To"]
+        ){
+
+            html +=
+
+            `
+            <div class='changed'>
+
+            Ship To
+
+            <br>
+
+            ${oldRow["Ship To"]}
+
+            →
+
+            ${latest["Ship To"]}
+
+            </div>
+            `;
+        }
+
+        if(
+
+        oldRow[
+        "Change Order Instructions"
+        ]
+
+        !==
+
+        latest[
+        "Change Order Instructions"
+        ]
+
+        ){
+
+            html +=
+
+            `
+            <div class='changed'>
+
+            Change Order Instructions
+
+            <br>
+
+            ${
+            oldRow[
+            "Change Order Instructions"
+            ] || "(blank)"
+            }
+
+            →
+
+            ${
+            latest[
+            "Change Order Instructions"
+            ] || "(blank)"
+            }
+
+            </div>
+            `;
+        }
+
+    }
+
+    html +=
+
+    "<h3>Full CSV Data</h3>";
+
+    Object.keys(latest)
+    .forEach(key=>{
+
+        if(
+        key.startsWith("__")
+        )
+        return;
+
+        html +=
+
+        `
+        <b>${key}</b>
+
+        <br>
+
+        ${latest[key]}
+
+        <br><br>
+        `;
+
+    });
+
+    document
+    .getElementById(
+    "historyContent"
+    ).innerHTML = html;
+
+    document
+    .getElementById(
+    "historyModal"
+    ).style.display =
+    "block";
+
+};
+
+
+    const rows =
+    rawData.filter(
         x =>
         x["Production Order Number"] === po
     );
