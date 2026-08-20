@@ -414,20 +414,13 @@ function drawTable(rows){
 
     rows.forEach(r=>{
 
-        const rev =
-        r.__isRevision
-        ?
-        "<span class='rev'>REV</span>"
-        :
-        "";
+const revisionStatus =
 
-const changeFlag =
-
-r["Change Order Instructions"]
+r.__isRevision
 
 ?
 
-"<span class='change-flag'>⚠ CHANGE</span>"
+"<span class='rev'>UPDATED</span>"
 
 :
 
