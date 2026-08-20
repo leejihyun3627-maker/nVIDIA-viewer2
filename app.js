@@ -1,38 +1,55 @@
-let allData = [];
+let rawData =
+JSON.parse(
+localStorage.getItem("NV2_RAW_DATA") || "[]"
+);
 
-window.loadFiles = function () {
+let currentTab = "ALL";
+
+function saveData(){
+    localStorage.setItem(
+        "NV2_RAW_DATA",
+        JSON.stringify(rawData)
+    );
+}
+
+window.loadFiles = function(){
 
     const files =
-        document.getElementById("csvFile").files;
+    document.getElementById("csvFile").files;
 
-    if (files.length === 0) {
+    if(files.length===0){
 
-        alert("CSV 파일을 선택하세요.");
+        alert("CSV 선택하세요.");
         return;
+
     }
 
-    Array.from(files).forEach(file => {
+    Array.from(files).forEach(file=>{
 
-        Papa.parse(file, {
+        Papa.parse(file,{
 
-            header: true,
+            header:true,
+            skipEmptyLines:true,
 
-            skipEmptyLines: true,
+            complete:function(result){
 
-            complete: function (results) {
+                result.data.forEach(row=>{
 
-                console.log(results);
+                    row.__fileName =
+                    file.name;
 
-                allData.push(...results.data);
+                    row.__isRevision =
+                    file.name.includes("_CHA_");
 
-                alert(
-                    file.name +
-                    " 업로드 완료 : " +
-                    results.data.length +
-                    "건"
-                );
+                    rawData.push(row);
 
-                renderTable(allData);
+                });
+
+                saveData();
+
+                refreshTargetDevice();
+
+                renderLatestData();
 
             }
 
@@ -42,56 +59,451 @@ window.loadFiles = function () {
 
 };
 
-window.searchData = function () {
+function refreshTargetDevice(){
 
-    alert(
-        "데이터 수 : " +
-        allData.length
+    let list =
+    document.getElementById(
+    "targetList"
     );
 
-};
+    if(!list){
 
-function renderTable(data) {
-
-    const tbody =
-        document.querySelector(
-            "#resultTable tbody"
+        list =
+        document.createElement(
+        "datalist"
         );
 
-    if (!tbody) return;
+        list.id =
+        "targetList";
 
-    tbody.innerHTML = "";
+        document.body.appendChild(
+        list
+        );
 
-    data.forEach(row => {
+        document
+        .getElementById(
+        "targetDevice"
+        )
+        .setAttribute(
+        "list",
+        "targetList"
+        );
 
-        tbody.innerHTML += `
+    }
 
-            <tr>
+    const targets =
+    [...new Set(
 
-                <td>
-                ${row["Release Date"] || ""}
-                </td>
+        rawData.map(
+        x=>
+        x[
+        "Production Order Build-As Part"
+        ]
+        )
+        .filter(Boolean)
 
-                <td>
-                ${row["Production Order Number"] || ""}
-                </td>
+    )];
 
-                <td>
-                ${row["Production Order Build-As Part"] || ""}
-                </td>
+    list.innerHTML="";
 
-                <td>
-                ${row["New Build-As Batch"] || ""}
-                </td>
+    targets
+    .sort()
+    .forEach(v=>{
 
-                <td>
-                ${row["Ship To"] || ""}
-                </td>
+        list.innerHTML +=
 
-            </tr>
-
-        `;
+        `<option value="${v}">`;
 
     });
 
 }
+
+function extractBridgeTokens(str){
+
+    if(!str)
+    return [];
+
+    let result=[];
+
+    str.split("#")
+    .forEach(part=>{
+
+        part.split("~")
+        .forEach(v=>{
+
+            result.push(
+            v.trim()
+            );
+
+        });
+
+    });
+
+    return result;
+
+}
+
+function parseReleaseDate(str){
+
+    if(!str)
+    return null;
+
+    const p =
+    str.trim().split("/");
+
+    return new Date(
+        p[2],
+        p[0]-1,
+        p[1]
+    );
+
+}
+
+function latestMap(){
+
+    const map = {};
+
+    rawData.forEach(row=>{
+
+        const po =
+        row[
+        "Production Order Number"
+        ];
+
+        if(!po)
+        return;
+
+        const filename =
+        row.__fileName || "";
+
+        const current =
+        map[po];
+
+        if(!current){
+
+            map[po] = row;
+
+            return;
+
+        }
+
+        const revCurrent =
+        current.__isRevision;
+
+        const revNew =
+        row.__isRevision;
+
+        if(
+            !revCurrent &&
+            revNew
+        ){
+
+            map[po] = row;
+
+        }
+
+    });
+
+    return map;
+
+}
+
+function renderLatestData(){
+
+    const latest =
+    Object.values(
+    latestMap()
+    );
+
+    applyFilter(latest);
+
+}
+
+window.searchData =
+function(){
+
+    const latest =
+    Object.values(
+    latestMap()
+    );
+
+    applyFilter(latest);
+
+};
+
+function applyFilter(data){
+
+    const target =
+    document
+    .getElementById(
+    "targetDevice"
+    )
+    .value
+    .toLowerCase();
+
+    const po =
+    document
+    .getElementById(
+    "po"
+    )
+    .value
+    .toLowerCase();
+
+    const batch =
+    document
+    .getElementById(
+    "batch"
+    )
+    .value
+    .toLowerCase();
+
+    const bridge =
+    document
+    .getElementById(
+    "bridge"
+    )
+    .value
+    .toLowerCase();
+
+    const fromDate =
+    document
+    .getElementById(
+    "fromDate"
+    )
+    .value;
+
+    const toDate =
+    document
+    .getElementById(
+    "toDate"
+    )
+    .value;
+
+    const filtered =
+    data.filter(row=>{
+
+        const routing =
+        (
+        row["Routing"]||""
+        );
+
+        if(
+        currentTab==="ASSY"
+        &&
+        !routing.includes(
+        "ASSY#SHIP"
+        ))
+        return false;
+
+        if(
+        currentTab==="BUMP"
+        &&
+        !routing.includes(
+        "BUMP#SHIP"
+        ))
+        return false;
+
+        const releaseDate =
+        parseReleaseDate(
+        row[
+        "Release Date"
+        ]
+        );
+
+        if(
+        fromDate &&
+        releaseDate <
+        new Date(fromDate)
+        )
+        return false;
+
+        if(
+        toDate &&
+        releaseDate >
+        new Date(toDate)
+        )
+        return false;
+
+        const bridgeTokens =
+        extractBridgeTokens(
+
+        row[
+        "Bridge Batches"
+        ]||""
+
+        )
+        .join(" ")
+        .toLowerCase();
+
+        return (
+
+        (
+        row[
+        "Production Order Build-As Part"
+        ]||""
+        )
+        .toLowerCase()
+        .includes(target)
+
+        &&
+
+        (
+        row[
+        "Production Order Number"
+        ]||""
+        )
+        .toLowerCase()
+        .includes(po)
+
+        &&
+
+        (
+        row[
+        "New Build-As Batch"
+        ]||""
+        )
+        .toLowerCase()
+        .includes(batch)
+
+        &&
+
+        bridgeTokens
+        .includes(bridge)
+
+        );
+
+    });
+
+    drawTable(filtered);
+
+}
+
+function drawTable(rows){
+
+    const tbody =
+    document.querySelector(
+    "#resultTable tbody"
+    );
+
+    tbody.innerHTML="";
+
+    document
+    .getElementById(
+    "resultCount"
+    )
+    .innerHTML =
+    "조회건수 : "
+    + rows.length;
+
+    rows
+    .sort((a,b)=>{
+
+        const d1 =
+        parseReleaseDate(
+        a["Release Date"]
+        );
+
+        const d2 =
+        parseReleaseDate(
+        b["Release Date"]
+        );
+
+        return d1-d2;
+
+    });
+
+    rows.forEach(r=>{
+
+        const rev =
+        r.__isRevision
+        ?
+        "<span class='rev'>REV</span>"
+        :
+        "";
+
+        const changeFlag =
+        (
+        r[
+        "Change Order Instructions"
+        ]||""
+        )
+        .trim() !== ""
+        ?
+        "⚠ CHANGE"
+        :
+        "";
+
+        tbody.innerHTML +=
+
+        `<tr>
+
+        <td>${r["Release Date"]||""}</td>
+
+        <td>
+
+        ${r["Production Order Number"]}
+
+        </td>
+
+        <td>${rev}</td>
+
+        <td>
+        ${r["Routing"]||""}
+        </td>
+
+        <td>
+        ${r["Production Order Build-As Part"]||""}
+        </td>
+
+        <td>
+        ${r["New Build-As Batch"]||""}
+        </td>
+
+        <td>
+        ${r["Ship To"]||""}
+        </td>
+
+        <td>
+        ${r["Production Order Quantity"]||""}
+        </td>
+
+        <td>
+        ${changeFlag}
+        </td>
+
+        </tr>`;
+
+    });
+
+}
+
+window.clearAllData =
+function(){
+
+    if(
+    !confirm(
+    "전체 삭제?"
+    )
+    )
+    return;
+
+    rawData=[];
+
+    saveData();
+
+    drawTable([]);
+
+};
+
+window.setTab =
+function(tab){
+
+    currentTab = tab;
+
+    renderLatestData();
+
+};
+
+refreshTargetDevice();
+
+renderLatestData();
