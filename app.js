@@ -441,11 +441,19 @@ function drawTable(rows){
 
         <td>
 
-        ${(r["Production Order Number"] || "")
+        <td>
+
+<a
+class="po-link"
+onclick="showHistory('${r["Production Order Number"]}')"
+>
+
+${(r["Production Order Number"] || "")
 .replace(/^0+/,'')}
 
+</a>
 
-        </td>
+</td>
 
         <td>${rev}</td>
 
