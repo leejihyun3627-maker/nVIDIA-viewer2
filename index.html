@@ -1,67 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NV2 Production Viewer</title>
 
-<meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
 
-<title>
-NV2 Production Viewer
-</title>
-
-<link rel="stylesheet" n.jsscript>
-
+    <script src="papaparse.min.js"></script>
 </head>
 
 <body>
 
-<h1>
-NV2 Production Viewer
-</h1>
+    <h1>NV2 Production Viewer</h1>
 
-<input type="file"
-id="csvFile"
-multiple>
+    <div class="toolbar">
 
-<button onclick="loadFiles()">
-CSV Upload
-</button>
+        <input type="file"
+               id="csvFile"
+               multiple
+               accept=".csv">
 
-<hr>
+        <button onclick="loadFiles()">
+            CSV Upload
+        </button>
 
-<input
-id="targetDevice"
-placeholder="Target Device">
+        <button onclick="clearAllData()">
+            Clear Data
+        </button>
 
-<input
-id="po"
-placeholder="Production Order">
+    </div>
 
-<input
-id="batch"
-placeholder="New Build-As Batch">
+    <hr>
 
-<input
-id="bridge"
-placeholder="Bridge Batch">
+    <div class="search-area">
 
-<input
-type="date"
-id="fromDate">
+        <input id="targetDevice"
+               placeholder="Target Device">
 
-<input
-type="date"
-id="toDate">
+        <input id="po"
+               placeholder="Production Order">
 
-<button onclick="searchData()">
-Search
-</button>
+        <input id="batch"
+               placeholder="New Build-As Batch">
 
-<div id="resultCount"></div>
+        <input id="bridge"
+               placeholder="Bridge Batch">
 
-<table id="resultTable">
+        <input type="date"
+               id="fromDate">
 
-</table>
+        <input type="date"
+               id="toDate">
 
-<script src="app.js"></
+        <button onclick="searchData()">
+            Search
+        </button>
+
+        <button onclick="resetSearch()">
+            Reset
+        </button>
+
+    </div>
+
+    <div id="resultCount"></div>
+
+    <table id="resultTable">
+
+        <thead>
+
+        <tr>
+
+            <th>Release Date</th>
+            <th>Production Order</th>
+            <th>Target Device</th>
+            <th>New Batch</th>
+            <th>Ship To</th>
+
+        </tr>
+
+        </thead>
+
+        <tbody></tbody>
+
+    </table>
+
+    <script src="app.js"></script>
+
+</body>
+
 </html>
