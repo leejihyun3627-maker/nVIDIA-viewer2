@@ -82,3 +82,56 @@ color:red;
 font-weight:bold;
 
 }
+
+.rev{
+
+background:#ff4d4f;
+
+color:white;
+
+padding:4px 8px;
+
+border-radius:4px;
+
+font-weight:bold;
+
+}
+
+.po-link{
+
+color:#1677ff;
+
+cursor:pointer;
+
+text-decoration:underline;
+
+}
+
+.changed{
+
+background:yellow;
+
+padding:5px;
+
+font-weight:bold;
+
+margin:5px 0;
+
+}
+
+#historyModal{
+
+display:none;
+position:fixed;
+top:5%;
+left:5%;
+width:90%;
+height:85%;
+background:white;
+overflow:auto;
+padding:20px;
+border:2px solid #333;
+z-index:9999;
+
+}
+`
