@@ -517,3 +517,122 @@ function(tab){
 refreshTargetDevice();
 
 renderLatestData();
+
+window.showHistory = function(po){
+
+    const rows =
+    rawData.filter(
+        x =>
+        x["Production Order Number"] === po
+    );
+
+    rows.sort(
+        (a,b)=>
+        a.__fileName.localeCompare(
+            b.__fileName
+        )
+    );
+
+    let html = "";
+
+    for(let i=0;i<rows.length;i++){
+
+        const row = rows[i];
+
+        html +=
+
+        `
+        <h3>
+        REV ${i}
+        </h3>
+
+        <b>
+        ${row.__fileName}
+        </b>
+
+        <br><br>
+
+        Ship To :
+
+        ${row["Ship To"] || ""}
+
+        <br><br>
+
+        Change Order :
+
+        ${row["Change Order Instructions"] || ""}
+
+        <hr>
+        `;
+    }
+
+    // 변경 비교
+
+    if(rows.length >= 2){
+
+        const oldRow = rows[0];
+        const newRow = rows[rows.length-1];
+
+        html += "<h3>Changed Fields</h3>";
+
+        if(
+            oldRow["Ship To"]
+            !==
+            newRow["Ship To"]
+        ){
+
+            html +=
+            `
+            <div class="changed">
+
+            Ship To
+
+            <br>
+
+            ${oldRow["Ship To"]}
+
+            →
+
+            ${newRow["Ship To"]}
+
+            </div>
+
+            <br>
+            `;
+        }
+
+        if(
+            oldRow["Change Order Instructions"]
+            !==
+            newRow["Change Order Instructions"]
+        ){
+
+            html +=
+            `
+            <div class="changed">
+
+            Change Order Instructions
+
+            <br>
+
+            ${oldRow["Change Order Instructions"] || "(blank)"}
+
+            →
+
+            ${newRow["Change Order Instructions"] || "(blank)"}
+
+            </div>
+            `;
+        }
+
+    }
+
+    document.getElementById(
+        "historyContent"
+    ).innerHTML = html;
+
+    document.getElementById(
+        "historyModal"
+    ).style.display = "block";
+
+};
