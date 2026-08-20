@@ -88,15 +88,15 @@ list="targetList">
 <tr>
 
 <th>Release Date</th>
-<th>PO</th>
-<th>REV</th>
+<th>Production Order Number</th>
 <th>Routing</th>
 <th>Target Device</th>
 <th>New Batch</th>
 <th>Ship To</th>
 <th>Qty</th>
 <th>Status</th>
-
+<th>REV</th>
+    
 </tr>
 
 </thead>
@@ -107,6 +107,34 @@ list="targetList">
 
     <script src="app.js"></script>
 
+<div id="historyModal"
+style="
+display:none;
+position:fixed;
+top:5%;
+left:5%;
+width:90%;
+height:85%;
+background:white;
+overflow:auto;
+padding:20px;
+z-index:9999;
+border:2px solid #000;
+">
+
+<button onclick="
+document.getElementById('historyModal').style.display='none'
+">
+닫기
+</button>
+
+<hr>
+
+<div id="historyContent"></div>
+
+</div>
+
+    
 </body>
 
 </html>
