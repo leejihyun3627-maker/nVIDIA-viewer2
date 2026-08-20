@@ -13,8 +13,23 @@
 
 <body>
 
-    <h1>NV2 Production Viewer</h1>
+<h1>NV2 Production Viewer</h1>
+    
+<div style="margin-bottom:15px;">
 
+<button onclick="setTab('ALL')">
+ALL
+</button>
+
+<button onclick="setTab('ASSY')">
+ASSY#SHIP
+</button>
+
+<button onclick="setTab('BUMP')">
+BUMP#SHIP
+</button>
+
+</div>
     <div class="toolbar">
 
         <input type="file"
@@ -74,17 +89,19 @@
 
 <th>Release Date</th>
 <th>PO</th>
+<th>REV</th>
+<th>Routing</th>
 <th>Target Device</th>
-<th>Batch</th>
+<th>New Batch</th>
 <th>Ship To</th>
+<th>Qty</th>
+<th>Status</th>
 
 </tr>
 
 </thead>
 
-<tbody>
-
-</tbody>
+<tbody></tbody>
 
 </table>
 
